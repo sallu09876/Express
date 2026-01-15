@@ -1,0 +1,13 @@
+<h1>Edit Students</h1>
+<form action="/add-user/update/<%= student.id %>" method="POST">
+  <label>Name:</label>
+  <input type="text" name="name" value="<%= student.name %>" required />
+
+  <label>Email:</label>
+  <input type="email" name="email" value="<%= student.email %>" required />
+
+  <label>Age:</label>
+  <input type="number" name="age" value="<%= student.age %>" required />
+
+  <button type="submit">Update</button>
+</form>

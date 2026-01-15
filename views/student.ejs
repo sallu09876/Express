@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Student List</h1>
+      <a href="/add-user" class="btn add-btn">Add New Student</a>
+      <ul class="list">
+        <% students.forEach(function(student) { %>
+        <li class="list-item">
+          <span><%= student.name %></span>
+          <span><%= student.email %></span>
+          <span><%= student.age %></span>
+          <a href="/add-user/edit/<%= student.id %>" class="btn edit-btn">Edit</a>
+          <form
+            action="/add-user/delete/<%= student.id %>"
+            method="POST"
+            class="inline-form"
+          >
+            <button type="submit" class="btn delete-btn">Delete</button>
+          </form>
+        </li>
+        <% }); %>
+      </ul>
+    </div>
+  </body>
+</html>
