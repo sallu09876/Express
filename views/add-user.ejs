@@ -1,13 +1,113 @@
-<h1>Add Students</h1>
-<form action="/add-user" method="POST">
-  <label>Name:</label>
-  <input type="text" name="name" placeholder="Name" required />
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Student</title>
 
-  <label>Email:</label>
-  <input type="email" name="email" placeholder="Email" required />
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
 
-  <label>Age:</label>
-  <input type="number" name="age" placeholder="Age" />
+      body {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+      }
 
-  <button type="submit">Add Student</button>
-</form>
+      .form-card {
+        background: #ffffff;
+        padding: 35px;
+        border-radius: 14px;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        animation: slideUp 0.7s ease;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #1f2937;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+        color: #374151;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px 12px;
+        margin-bottom: 18px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 14px;
+        transition: all 0.3s;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        background: #2563eb;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      button:hover {
+        background: #1e40af;
+        transform: translateY(-1px);
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(25px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <form action="/add-user" method="POST" class="form-card">
+      <h1>Add Student</h1>
+
+      <label>Name</label>
+      <input type="text" name="name" placeholder="Enter full name" required />
+
+      <label>Email</label>
+      <input
+        type="email"
+        name="email"
+        placeholder="Enter email address"
+        required
+      />
+
+      <label>Age</label>
+      <input type="number" name="age" placeholder="Enter age" />
+
+      <button type="submit">Add Student</button>
+    </form>
+  </body>
+</html>

@@ -33,6 +33,12 @@ mongoose
     console.error("Error connecting to MongoDB:", error);
   });
 
+// Custom middleware to log request details
+app.use((req, res, next) => {
+  console.log(`Request URL: ${req.url}, Method: ${req.method}`); // Log the request URL and method
+  next(); // Proceed to the next middleware or route handler
+});
+
 // Setting EJS as the templating engine
 app.set("view engine", "ejs");
 

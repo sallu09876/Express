@@ -1,13 +1,120 @@
-<h1>Edit Students</h1>
-<form action="/add-user/update/<%= student.id %>" method="POST">
-  <label>Name:</label>
-  <input type="text" name="name" value="<%= student.name %>" required />
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Student</title>
 
-  <label>Email:</label>
-  <input type="email" name="email" value="<%= student.email %>" required />
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
 
-  <label>Age:</label>
-  <input type="number" name="age" value="<%= student.age %>" required />
+      body {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      }
 
-  <button type="submit">Update</button>
-</form>
+      .form-card {
+        background: #ffffff;
+        padding: 35px;
+        border-radius: 14px;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        animation: slideUp 0.7s ease;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 10px;
+        color: #1f2937;
+      }
+
+      .subtitle {
+        text-align: center;
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 25px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+        color: #374151;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px 12px;
+        margin-bottom: 18px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 14px;
+        transition: all 0.3s;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.25);
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        background: #4f46e5;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      button:hover {
+        background: #4338ca;
+        transform: translateY(-1px);
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(25px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <form
+      action="/add-user/update/<%= student.id %>"
+      method="POST"
+      class="form-card"
+    >
+      <h1>Edit Student</h1>
+      <p class="subtitle">Update student details</p>
+
+      <label>Name</label>
+      <input type="text" name="name" value="<%= student.name %>" required />
+
+      <label>Email</label>
+      <input type="email" name="email" value="<%= student.email %>" required />
+
+      <label>Age</label>
+      <input type="number" name="age" value="<%= student.age %>" required />
+
+      <button type="submit">Update Student</button>
+    </form>
+  </body>
+</html>
