@@ -147,6 +147,24 @@ app.post("/add-user/delete/:id", async (req, res) => {
   }
 });
 
+// Search route to find students by name
+app.get("/add-user/search", async (req, res) => {
+  try {
+    const query = req.query.search_text; // Get the search text from query parameters
+    // Search for students with names matching the query
+    const students = await User.find({
+      name: { $regex: query, $options: "i" }, // Case-insensitive regex search
+    });
+    // Render the student.ejs template with the search results
+    res.render("student", {
+      title: "Search Results", // Title for the page
+      students: students, // Pass the search results to the template
+    });
+  } catch (error) {
+    res.status(400).send("Error finding student: " + error.message);
+  }
+});
+
 // Starting the server
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
