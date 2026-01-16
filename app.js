@@ -1,6 +1,7 @@
 // Importing required modules
 const express = require("express");
 const { default: mongoose } = require("mongoose");
+const productRoutes = require("./routes/productRoutes");
 
 // Initializing the Express application
 const app = express();
@@ -18,6 +19,9 @@ app.use(express.json());
 
 // Middleware to parse URL-encoded requests
 app.use(express.urlencoded({ extended: true }));
+
+// Using product routes for handling product-related requests
+app.use("/products", productRoutes);
 
 // MongoDB connection URL
 const mongoURL =
@@ -68,12 +72,12 @@ app.get("/", (req, res) => {
 
 // About route
 app.get("/about", (req, res) => {
-  res.send("About Page !");
+  res.render("about", { title: "About Us | MyExpress" });
 });
 
 // Contact route
 app.get("/contact", (req, res) => {
-  res.send("Contact Page !");
+  res.render("contact", { title: "Contact Support | MyExpress" });
 });
 
 // JSON response route
