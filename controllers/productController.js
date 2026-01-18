@@ -56,6 +56,7 @@ exports.home = async (req, res) => {
     };
   }
 
+  // Fetch products based on the query
   const products = await Product.find(query);
   res.render("index", {
     title: "Products",
