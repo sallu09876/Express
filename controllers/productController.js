@@ -1,4 +1,5 @@
 const Product = require("../models/ProductModel");
+const multer = require("multer");
 
 // SHOW ALL PRODUCTS
 exports.home = async (req, res) => {
