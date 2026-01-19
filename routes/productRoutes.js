@@ -7,18 +7,14 @@ router.get("/", controller.getProducts);
 
 /* Add */
 router.get("/add", (req, res) => res.render("addProduct"));
-router.post(
-  "/add",
-  controller.upload.single("image"),
-  controller.addProduct
-);
+router.post("/add", controller.upload.single("image"), controller.addProduct);
 
 /* Edit */
 router.get("/edit/:id", controller.editProductPage);
 router.post(
   "/edit/:id",
   controller.upload.single("image"),
-  controller.updateProduct
+  controller.updateProduct,
 );
 
 /* Delete */
