@@ -1,35 +1,27 @@
 const express = require("express");
 const router = express.Router();
-const productController = require("../controllers/productController");
-const multer = require("multer");
+const controller = require("../controllers/productController");
 
-// Multer configuration for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    // Specify the destination directory
-    cb(null, "uploads/"); // Ensure this directory exists
-  },
-  filename: function (req, file, cb) {
-    // Specify the file name
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
+/* List */
+router.get("/", controller.getProducts);
 
-// Initialize multer with the defined storage
-const upload = multer({ storage: storage });
+/* Add */
+router.get("/add", (req, res) => res.render("addProduct"));
+router.post(
+  "/add",
+  controller.upload.single("image"),
+  controller.addProduct
+);
 
-// READ
-router.get("/", productController.home);
+/* Edit */
+router.get("/edit/:id", controller.editProductPage);
+router.post(
+  "/edit/:id",
+  controller.upload.single("image"),
+  controller.updateProduct
+);
 
-// ADD
-router.get("/add", productController.addPage);
-router.post("/add", upload.single("image"), productController.addProduct);
-
-// EDIT
-router.get("/edit/:id", productController.editPage);
-router.post("/edit/:id", productController.updateProduct);
-
-// DELETE
-router.get("/delete/:id", productController.deleteProduct);
+/* Delete */
+router.get("/delete/:id", controller.deleteProduct);
 
 module.exports = router;

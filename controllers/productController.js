@@ -1,66 +1,96 @@
 const Product = require("../models/ProductModel");
 const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
-// SHOW ALL PRODUCTS
-exports.home = async (req, res) => {
+/* ---------- Ensure Upload Folder Exists ---------- */
+const uploadDir = path.join(__dirname, "../public/uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+/* ---------- Multer Config ---------- */
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/uploads");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+exports.upload = multer({ storage });
+
+/* ---------- Show Products ---------- */
+exports.getProducts = async (req, res) => {
   const products = await Product.find();
-  res.render("index", {
-    title: "Products",
-    products,
-  });
+  res.render("index", { title: "Products", products });
 };
 
-// ADD PAGE
-exports.addPage = (req, res) => {
-  res.render("addProduct", {
-    title: "Add Product",
-  });
-};
-
-// ADD PRODUCT
+/* ---------- Add Product ---------- */
 exports.addProduct = async (req, res) => {
-  await Product.create(req.body);
-  res.redirect("/products");
-};
+  const { name, price, category } = req.body;
 
-// EDIT PAGE
-exports.editPage = async (req, res) => {
-  const product = await Product.findById(req.params.id);
-  res.render("editProduct", {
-    title: "Edit Product",
-    product,
+  await Product.create({
+    name,
+    price,
+    category,
+    image: req.file ? req.file.filename : "", // ✅ SAFE
   });
+
+  res.redirect("/products");
 };
 
-// UPDATE PRODUCT
+/* ---------- Edit Product Page ---------- */
+exports.editProductPage = async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  if (!product) return res.redirect("/products");
+  res.render("editProduct", { product });
+};
+
+/* ---------- Update Product ---------- */
 exports.updateProduct = async (req, res) => {
-  await Product.findByIdAndUpdate(req.params.id, req.body);
-  res.redirect("/products");
-};
+  const product = await Product.findById(req.params.id);
+  if (!product) return res.redirect("/products");
 
-// DELETE PRODUCT
-exports.deleteProduct = async (req, res) => {
-  await Product.findByIdAndDelete(req.params.id);
-  res.redirect("/products");
-};
+  // IF NEW IMAGE UPLOADED
+  if (req.file) {
+    if (product.image) {
+      const oldImagePath = path.join(
+        __dirname,
+        "../public/uploads",
+        product.image,
+      );
 
-// Search by name OR category (case-insensitive)
-exports.home = async (req, res) => {
-  let query = {};
-  if (req.query.search_text) {
-    const search = req.query.search_text;
-    query = {
-      $or: [
-        { name: { $regex: search, $options: "i" } },
-        { category: { $regex: search, $options: "i" } },
-      ],
-    };
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+    }
+
+    product.image = req.file.filename;
   }
 
-  // Fetch products based on the query
-  const products = await Product.find(query);
-  res.render("index", {
-    title: "Products",
-    products,
-  });
+  product.name = req.body.name;
+  product.price = req.body.price;
+  product.category = req.body.category;
+
+  await product.save();
+  res.redirect("/products");
+};
+
+/* ---------- Delete Product ---------- */
+exports.deleteProduct = async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  if (!product) return res.redirect("/products");
+
+  if (product.image) {
+    const imagePath = path.join(__dirname, "../public/uploads", product.image);
+
+    if (fs.existsSync(imagePath)) {
+      fs.unlinkSync(imagePath);
+    }
+  }
+
+  await product.deleteOne();
+  res.redirect("/products");
 };

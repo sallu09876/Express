@@ -98,11 +98,29 @@
   <body>
     <div class="form-card">
       <h2>Edit Product</h2>
-      <form action="/products/edit/<%= product._id %>" method="POST">
-        <input name="name" value="<%= product.name %>" placeholder="Product Name" required />
-        <input name="price" type="number" value="<%= product.price %>" placeholder="Price" required />
-        <input name="category" value="<%= product.category %>" placeholder="Category" required />
-        <button type="submit">Update</button>
+      <form
+        action="/products/edit/<%= product._id %>"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <input name="name" value="<%= product.name %>" required />
+        <input
+          name="price"
+          type="number"
+          value="<%= product.price %>"
+          required
+        />
+        <input name="category" value="<%= product.category %>" required />
+
+        <p>Current Image:</p>
+        <img
+          src="/uploads/<%= product.image %>"
+          width="120"
+          style="border-radius: 10px"
+        />
+
+        <input type="file" name="image" accept="image/*" />
+        <button>Update Product</button>
       </form>
     </div>
   </body>

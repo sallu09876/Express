@@ -91,10 +91,11 @@
   <body>
     <div class="form-card">
       <h2>Add Product</h2>
-      <form action="/products/add" method="POST">
+      <form action="/products/add" method="POST" enctype="multipart/form-data">
         <input name="name" placeholder="Product Name" required />
         <input name="price" type="number" placeholder="Price" required />
         <input name="category" placeholder="Category" required />
+        <input name="image" type="file" accept="image/*" required />
         <button type="submit">Add</button>
       </form>
     </div>
