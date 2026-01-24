@@ -1,0 +1,8 @@
+| Feature      | Express To-Do            | React To-Do       |
+| ------------ | ------------------------ | ----------------- |
+| Type         | Full-stack (server + UI) | Frontend only     |
+| UI Rendering | Manual DOM               | Virtual DOM       |
+| State        | Server memory            | Component state   |
+| Routing      | Express routes           | React Router      |
+| Re-rendering | Full rebuild             | Smart diff update |
+| Data source  | Backend                  | Local state / API |
