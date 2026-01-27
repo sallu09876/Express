@@ -16,8 +16,8 @@ async function loadTodos() {
         ${todo.task}
       </span>
       <div class="actions">
-        <span class="check" onclick="toggleTodo(${todo.id})">✔</span>
-        <span class="delete" onclick="deleteTodo(${todo.id})">❌</span>
+        <span class="check" onclick="toggleTodo('${todo._id}')">✔</span>
+        <span class="delete" onclick="deleteTodo('${todo._id}')">❌</span>
       </div>
     `;
 
