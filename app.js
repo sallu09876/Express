@@ -23,6 +23,9 @@ app.use(express.urlencoded({ extended: true }));
 // Using product routes for handling product-related requests
 app.use("/products", productRoutes);
 
+// Using API routes for handling API-related requests
+app.use("/api", require("./routes/api.route"));
+
 // MongoDB connection URL
 const mongoURL =
   "mongodb+srv://sallu2004mkt_db_user:qScniugwZiJo6ne7@cluster0.hnozqxf.mongodb.net/Students?appName=mongosh+2.5.10";
