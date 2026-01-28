@@ -44,3 +44,15 @@ npm install ejs
 
 all together:
 npm install express -g nodemon ejs mongoose body-parser
+
+===================28-1-26=====================
+
+# Authentication - who are you? (login,signup, verify user credentials).
+# Authorization - What are you allowed to?(Admin access, protected routes, permissions)
+
+Authentication in Express - 
+
+# bcrypt is used to hash a password - make it to unreadable form.
+# hashing is one way. can't change back to old format.
+# encryption is two way. we can decrypt that.
+# using of "salt" (salt is random characters) is used to make the hashing more efficient.
