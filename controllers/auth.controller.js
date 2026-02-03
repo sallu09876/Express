@@ -1,5 +1,4 @@
 const bcrypt = require("bcrypt");
-const { sendOTPEmail } = require("../lib/mail");
 
 // In-memory user array
 const users = [];
@@ -83,3 +82,17 @@ const login = async (req, res) => {
 };
 
 module.exports = { register, login };
+
+// Register demo :-
+// {
+//   "name": "Salman",
+//   "username": "salman123",
+//   "email": "salman@gmail.com",
+//   "password": "123456"
+// }
+
+// Login demo :-
+// {
+//   "username": "salman123",
+//   "password": "123456"
+// }
