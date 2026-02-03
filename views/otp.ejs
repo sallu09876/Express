@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Send OTP</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+    }
+    .card {
+      width: 350px;
+      margin: 80px auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 12px;
+    }
+    button {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    .popup {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .success {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h3>Email OTP Verification</h3>
+
+    <form method="POST" action="/auth/otp">
+      <input type="email" name="email" placeholder="Enter your email" required />
+      <button type="submit">Send OTP</button>
+    </form>
+
+    <% if (message) { %>
+      <div class="popup success"><%= message %></div>
+    <% } %>
+
+    <% if (error) { %>
+      <div class="popup error"><%= error %></div>
+    <% } %>
+  </div>
+
+</body>
+</html>
