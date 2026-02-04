@@ -1,18 +1,24 @@
 const express = require("express");
-const router = express.Router();
-// import { Router } from 'express';
-// const router = Router();
-const mailController = require("../controllers/mail.controller");
+const {
+  otpPage,
+  sendOtp,
+  verifyOtp,
+  resendOtp,
+} = require("../controllers/mail.controller");
 const authController = require("../controllers/auth.controller");
+
+const router = express.Router();
 
 // Auth routes
 router.post("/register", authController.register);
 router.post("/login", authController.login);
 
-// OTP routes
-router.get("/otp", mailController.otpPage); // GET page
-router.post("/otp", mailController.sendOtp); // POST email to send OTP
-router.post("/verify-otp", mailController.verifyOtp); // POST OTP verification
+/* UI */
+router.get("/otp", otpPage);
+
+/* API + UI */
+router.post("/otp/send", sendOtp);
+router.post("/otp/verify", verifyOtp);
+router.post("/otp/resend", resendOtp);
 
 module.exports = router;
-// export default router;

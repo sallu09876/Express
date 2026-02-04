@@ -2,30 +2,26 @@ const express = require("express");
 const session = require("express-session");
 const path = require("path");
 
+const otpRoutes = require("./routes/auth.routes");
+
 const app = express();
-const PORT = 3000;
 
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-// session (IMPORTANT for OTP)
 app.use(
   session({
-    secret: "otp-secret-key",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { maxAge: 5 * 60 * 1000 }, // 5 minutes
   }),
 );
 
-// EJS setup
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Routes
-const authRouter = require("./routes/auth.routes");
-app.use("/auth", authRouter);
+app.use("/", otpRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/auth/otp`);
+app.listen(3000, () => {
+  console.log("🚀 Server running on http://localhost:3000/otp");
 });

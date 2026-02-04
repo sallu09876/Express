@@ -1,119 +1,158 @@
 const { sendOTPEmail } = require("../lib/mail");
+const otpStore = require("../utils/otpStore");
 
-// Show OTP page
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const OTP_EXPIRY = 5 * 60 * 1000; // 5 minutes
+const RESEND_TIME = 60 * 1000; // 60 seconds
+
+/* ===================== HELPERS ===================== */
+const isAPI = (req) =>
+  req.headers.accept?.includes("application/json") ||
+  req.headers["content-type"] === "application/json";
+
+/* ===================== UI PAGE ===================== */
 const otpPage = (req, res) => {
   res.render("otp", {
     message: null,
     error: null,
     email: null,
-    resendAfter: null,
+    canResend: false,
+    waitTime: 0,
   });
 };
 
-// Send OTP
+/* ===================== SEND OTP ===================== */
 const sendOtp = async (req, res) => {
-  try {
+  const { email } = req.body;
 
-    const { email } = req.body;
-    if (!email) {
-      return req.xhr || req.headers.accept.includes("application/json")
-        ? res.status(400).json({ ok: false, message: "Email required" })
-        : res.render("otp", {
-            message: null,
-            error: "Email is required",
-            email: null,
-            resendAfter: null,
-          });
-    }
-
-    // resend block
-    if (req.session.resend && Date.now() < req.session.resend) {
-      const secondsLeft = Math.ceil((req.session.resend - Date.now()) / 1000);
-
-      return req.xhr || req.headers.accept.includes("application/json")
-        ? res.status(429).json({
-            ok: false,
-            message: `Wait ${secondsLeft}s before resending`,
-          })
-        : res.render("otp", {
-            message: null,
-            error: `Please wait ${secondsLeft}s before resending OTP`,
-            email,
-            resendAfter: secondsLeft,
-          });
-    }
-
-    const otp = await sendOTPEmail(email);
-
-    req.session.otp = otp;
-    req.session.email = email;
-    req.session.resend = Date.now() + 60 * 1000;
-
-    console.log("✅ OTP sent successfully");
-    console.log("🔐 OTP:", otp);
-
-    // 🔁 RESPONSE SWITCH
-    return req.xhr || req.headers.accept.includes("application/json")
-      ? res.json({
-          ok: true,
-          message: "OTP sent successfully",
-        })
-      : res.render("otp", {
-          message: "OTP sent successfully ✅",
-          error: null,
-          email,
-          resendAfter: 60,
-        });
-  } catch (err) {
-    console.error("SEND OTP ERROR:", err);
-
-    return req.xhr || req.headers.accept.includes("application/json")
-      ? res.status(500).json({ ok: false, message: "OTP send failed" })
-      : res.render("otp", {
-          message: null,
-          error: "Failed to send OTP ❌",
-          email: null,
-          resendAfter: null,
-        });
+  if (!email || !EMAIL_REGEX.test(email)) {
+    return respond(req, res, false, "Invalid email address");
   }
+
+  const existing = otpStore.get(email);
+
+  if (existing && Date.now() < existing.resendAt) {
+    const wait = Math.ceil((existing.resendAt - Date.now()) / 1000);
+    return respond(
+      req,
+      res,
+      false,
+      `Wait ${wait}s before resending`,
+      email,
+      wait,
+    );
+  }
+
+  const otp = await sendOTPEmail(email);
+
+  otpStore.set(email, {
+    otp,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + OTP_EXPIRY,
+    resendAt: Date.now() + RESEND_TIME,
+  });
+
+  console.log("🔐 OTP sent:", otp);
+
+  respond(req, res, true, "OTP sent successfully", email, 60);
 };
 
-// Verify OTP
+/* ===================== VERIFY OTP ===================== */
 const verifyOtp = (req, res) => {
-  const { otp1, otp2, otp3, otp4 } = req.body;
-  const enteredOtp = `${otp1}${otp2}${otp3}${otp4}`;
+  let { email, otp, otp1, otp2, otp3, otp4 } = req.body;
 
-  if (!req.session.otp) {
-    return res.render("otp", {
-      message: null,
-      error: "OTP expired or not sent ❌",
-      email: null,
-      resendAfter: null,
-    });
+  // Support both UI & API
+  if (!otp && otp1) {
+    otp = `${otp1}${otp2}${otp3}${otp4}`;
   }
 
-  if (enteredOtp === req.session.otp) {
-    const email = req.session.email;
-
-    /* 🔥 DESTROY SESSION AFTER SUCCESS */
-    req.session.destroy((err) => {
-      if (err) console.error("Session destroy error:", err);
-
-      return res.render("otp", {
-        message: `OTP verified successfully for ${email} ✅`,
-        error: null,
-        email: null,
-        resendAfter: null,
-      });
-    });
-  } else {
-    return res.render("otp", {
-      message: null,
-      error: "Invalid OTP ❌",
-      email: req.session.email,
-      resendAfter: null,
-    });
+  if (!email || !otp) {
+    return respond(req, res, false, "Email & OTP required");
   }
+
+  const record = otpStore.get(email);
+
+  if (!record) {
+    return respond(req, res, false, "OTP does not exist");
+  }
+
+  if (Date.now() > record.expiresAt) {
+    otpStore.delete(email);
+    return respond(req, res, false, "OTP expired");
+  }
+
+  if (record.otp !== otp) {
+    return respond(req, res, false, "Invalid OTP", email);
+  }
+
+  otpStore.delete(email);
+
+  if (req.session) {
+    req.session.destroy(() => {});
+  }
+
+  respond(req, res, true, "OTP verified successfully");
 };
 
-module.exports = { otpPage, sendOtp, verifyOtp };
+/* ===================== RESEND OTP ===================== */
+const resendOtp = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email || !EMAIL_REGEX.test(email)) {
+    return respond(req, res, false, "Invalid email");
+  }
+
+  const record = otpStore.get(email);
+
+  if (!record) {
+    return respond(req, res, false, "OTP not found");
+  }
+
+  if (Date.now() < record.resendAt) {
+    const wait = Math.ceil((record.resendAt - Date.now()) / 1000);
+    return respond(
+      req,
+      res,
+      false,
+      `Wait ${wait}s before resending`,
+      email,
+      wait,
+    );
+  }
+
+  const otp = await sendOTPEmail(email);
+
+  otpStore.set(email, {
+    otp,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + OTP_EXPIRY,
+    resendAt: Date.now() + RESEND_TIME,
+  });
+
+  console.log("🔁 OTP resent:", otp);
+
+  respond(req, res, true, "OTP resent successfully", email, 60);
+};
+
+/* ===================== RESPONSE HANDLER ===================== */
+function respond(req, res, ok, message, email = null, waitTime = 0) {
+  if (isAPI(req)) {
+    return res.json({
+      ok,
+      message,
+      email,
+      waitTime,
+      timestamp: Date.now(),
+    });
+  }
+
+  return res.render("otp", {
+    message: ok ? message : null,
+    error: ok ? null : message,
+    email,
+    canResend: waitTime === 0,
+    waitTime,
+  });
+}
+
+module.exports = { otpPage, sendOtp, verifyOtp, resendOtp };
