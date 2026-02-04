@@ -56,3 +56,12 @@ Authentication in Express -
 # hashing is one way. can't change back to old format.
 # encryption is two way. we can decrypt that.
 # using of "salt" (salt is random characters) is used to make the hashing more efficient.
+
+
+js es6 :-
+main : app.mjs
+type : module
+import { Router } from 'express';
+const router = Router();
+
+export default router;
