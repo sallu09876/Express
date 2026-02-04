@@ -14,7 +14,7 @@ app.use(
     secret: "otp-secret-key",
     resave: false,
     saveUninitialized: true,
-    cookie: { maxAge: 10 * 60 * 1000 }, // 10 minutes
+    cookie: { maxAge: 5 * 60 * 1000 }, // 5 minutes
   }),
 );
 
