@@ -29,8 +29,10 @@ const sendOtp = async (req, res) => {
     return respond(req, res, false, "Invalid email address");
   }
 
+  // Check if OTP already sent and resend time not elapsed
   const existing = otpStore.get(email);
 
+  // If existing and still within resend time
   if (existing && Date.now() < existing.resendAt) {
     const wait = Math.ceil((existing.resendAt - Date.now()) / 1000);
     return respond(
@@ -62,31 +64,39 @@ const verifyOtp = (req, res) => {
   let { email, otp, otp1, otp2, otp3, otp4 } = req.body;
 
   // Support both UI & API
+  // Combine otp1, otp2, otp3, otp4 if otp not provided
   if (!otp && otp1) {
     otp = `${otp1}${otp2}${otp3}${otp4}`;
   }
 
+  // Validate inputs
   if (!email || !otp) {
     return respond(req, res, false, "Email & OTP required");
   }
 
+  // Validate email format
   const record = otpStore.get(email);
 
+  // Check if record exists
   if (!record) {
     return respond(req, res, false, "OTP does not exist");
   }
 
+  // Check if OTP expired
   if (Date.now() > record.expiresAt) {
     otpStore.delete(email);
     return respond(req, res, false, "OTP expired");
   }
 
+  // Check if OTP matches
   if (record.otp !== otp) {
     return respond(req, res, false, "Invalid OTP", email);
   }
 
+  // OTP verified successfully
   otpStore.delete(email);
 
+  // Destroy session if exists
   if (req.session) {
     req.session.destroy(() => {});
   }
