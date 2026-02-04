@@ -13,55 +13,68 @@ const otpPage = (req, res) => {
 // Send OTP
 const sendOtp = async (req, res) => {
   try {
-    const { email } = req.body;
 
+    const { email } = req.body;
     if (!email) {
-      return res.render("otp", {
-        message: null,
-        error: "Email is required",
-        email: null,
-        resendAfter: null,
-      });
+      return req.xhr || req.headers.accept.includes("application/json")
+        ? res.status(400).json({ ok: false, message: "Email required" })
+        : res.render("otp", {
+            message: null,
+            error: "Email is required",
+            email: null,
+            resendAfter: null,
+          });
     }
 
-    /* ⏱ RESEND BLOCK (60 seconds) */
+    // resend block
     if (req.session.resend && Date.now() < req.session.resend) {
       const secondsLeft = Math.ceil((req.session.resend - Date.now()) / 1000);
 
-      return res.render("otp", {
-        message: null,
-        error: `Please wait ${secondsLeft}s before resending OTP ⏳`,
-        email,
-        resendAfter: secondsLeft,
-      });
+      return req.xhr || req.headers.accept.includes("application/json")
+        ? res.status(429).json({
+            ok: false,
+            message: `Wait ${secondsLeft}s before resending`,
+          })
+        : res.render("otp", {
+            message: null,
+            error: `Please wait ${secondsLeft}s before resending OTP`,
+            email,
+            resendAfter: secondsLeft,
+          });
     }
 
-    /* 📩 SEND OTP */
-    const otp = await sendOTPEmail(email); // ONLY OTP returned
+    const otp = await sendOTPEmail(email);
 
-    /* 💾 SAVE IN SESSION */
     req.session.otp = otp;
     req.session.email = email;
     req.session.resend = Date.now() + 60 * 1000;
 
     console.log("✅ OTP sent successfully");
-    console.log("🔐 OTP:", otp); // terminal only
+    console.log("🔐 OTP:", otp);
 
-    res.render("otp", {
-      message: "OTP sent successfully ✅",
-      error: null,
-      email,
-      resendAfter: 60,
-    });
+    // 🔁 RESPONSE SWITCH
+    return req.xhr || req.headers.accept.includes("application/json")
+      ? res.json({
+          ok: true,
+          message: "OTP sent successfully",
+        })
+      : res.render("otp", {
+          message: "OTP sent successfully ✅",
+          error: null,
+          email,
+          resendAfter: 60,
+        });
   } catch (err) {
     console.error("SEND OTP ERROR:", err);
 
-    res.render("otp", {
-      message: null,
-      error: "Failed to send OTP ❌",
-      email: null,
-      resendAfter: null,
-    });
+    return req.xhr || req.headers.accept.includes("application/json")
+      ? res.status(500).json({ ok: false, message: "OTP send failed" })
+      : res.render("otp", {
+          message: null,
+          error: "Failed to send OTP ❌",
+          email: null,
+          resendAfter: null,
+        });
   }
 };
 
