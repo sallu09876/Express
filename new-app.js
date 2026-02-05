@@ -1,10 +1,11 @@
 const express = require("express");
 const session = require("express-session");
 const path = require("path");
-
+const connectDB = require("./config/db");
 const otpRoutes = require("./routes/auth.routes");
 
 const app = express();
+connectDB();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

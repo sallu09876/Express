@@ -5,13 +5,13 @@ const {
   verifyOtp,
   resendOtp,
 } = require("../controllers/mail.controller");
-const authController = require("../controllers/auth.controller");
+const { register, login } = require("../controllers/auth.controller");
 
 const router = express.Router();
 
 // Auth routes
-router.post("/register", authController.register);
-router.post("/login", authController.login);
+router.post("/register", register);
+router.post("/login", login);
 
 /* UI */
 router.get("/otp", otpPage);

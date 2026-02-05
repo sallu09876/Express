@@ -1,6 +1,5 @@
 const { sendOTPEmail } = require("../lib/mail");
-const otpStore = require("../utils/otpStore");
-
+const Otp = require("../models/Otp");
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const OTP_EXPIRY = 5 * 60 * 1000; // 5 minutes
 const RESEND_TIME = 60 * 1000; // 60 seconds
@@ -30,7 +29,7 @@ const sendOtp = async (req, res) => {
   }
 
   // Check if OTP already sent and resend time not elapsed
-  const existing = otpStore.get(email);
+  const existing = await Otp.findOne({ email });
 
   // If existing and still within resend time
   if (existing && Date.now() < existing.resendAt) {
@@ -47,12 +46,16 @@ const sendOtp = async (req, res) => {
 
   const otp = await sendOTPEmail(email);
 
-  otpStore.set(email, {
-    otp,
-    createdAt: Date.now(),
-    expiresAt: Date.now() + OTP_EXPIRY,
-    resendAt: Date.now() + RESEND_TIME,
-  });
+  await Otp.findOneAndUpdate(
+    { email },
+    {
+      otp,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + OTP_EXPIRY,
+      resendAt: Date.now() + RESEND_TIME,
+    },
+    { upsert: true, new: true },
+  );
 
   console.log("🔐 OTP sent:", otp);
 
@@ -60,7 +63,7 @@ const sendOtp = async (req, res) => {
 };
 
 /* ===================== VERIFY OTP ===================== */
-const verifyOtp = (req, res) => {
+const verifyOtp = async (req, res) => {
   let { email, otp, otp1, otp2, otp3, otp4 } = req.body;
 
   // Support both UI & API
@@ -75,7 +78,7 @@ const verifyOtp = (req, res) => {
   }
 
   // Validate email format
-  const record = otpStore.get(email);
+  const record = await Otp.findOne({ email });
 
   // Check if record exists
   if (!record) {
@@ -84,7 +87,7 @@ const verifyOtp = (req, res) => {
 
   // Check if OTP expired
   if (Date.now() > record.expiresAt) {
-    otpStore.delete(email);
+    await Otp.deleteOne({ email });
     return respond(req, res, false, "OTP expired");
   }
 
@@ -94,7 +97,7 @@ const verifyOtp = (req, res) => {
   }
 
   // OTP verified successfully
-  otpStore.delete(email);
+  await Otp.deleteOne({ email });
 
   // Destroy session if exists
   if (req.session) {
@@ -112,7 +115,7 @@ const resendOtp = async (req, res) => {
     return respond(req, res, false, "Invalid email");
   }
 
-  const record = otpStore.get(email);
+  const record = await Otp.findOne({ email });
 
   if (!record) {
     return respond(req, res, false, "OTP not found");
@@ -132,12 +135,15 @@ const resendOtp = async (req, res) => {
 
   const otp = await sendOTPEmail(email);
 
-  otpStore.set(email, {
-    otp,
-    createdAt: Date.now(),
-    expiresAt: Date.now() + OTP_EXPIRY,
-    resendAt: Date.now() + RESEND_TIME,
-  });
+  await Otp.findOneAndUpdate(
+    { email },
+    {
+      otp,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + OTP_EXPIRY,
+      resendAt: Date.now() + RESEND_TIME,
+    },
+  );
 
   console.log("🔁 OTP resent:", otp);
 
